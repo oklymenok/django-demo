@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Wisdom</title>
+    <style>
+        /* Minimal CSS for demonstration */
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        .quote-box { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; max-width: 600px; margin: 0 auto 20px; border-radius: 8px; }
+        .quote-text { font-size: 1.5em; font-style: italic; margin-bottom: 10px; }
+        .quote-author { font-weight: bold; }
+        .quote-reference { font-size: 0.9em; color: #555; }
+        .new-quote-btn { padding: 10px 20px; font-size: 1em; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>A Moment of Wisdom 💡</h1>
+
+    {% if quote %}
+    <div class="quote-box">
+        <p class="quote-text">"{{ quote.quote_text }}"</p>
+        <p class="quote-author">- {{ quote.author }}</p>
+        {% if quote.reference %}
+            <p class="quote-reference">({{ quote.reference }})</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="quote-box">
+        <p>No wisdom quotes found. Please add some to the database!</p>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'index' %}">
+        <button class="new-quote-btn">
+            Get New Wisdom
+        </button>
+    </a>
+
+</body>
+</html>

@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, re
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +26,35 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-qee#r$ihc#q6jvkd^!2vr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ALLOWED_HOSTS = []
+DEPLOYMENT_TYPE = os.environ.get('DEPLOYMENT_TYPE','')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '0.0.0.0').split(',')
+if DEPLOYMENT_TYPE == '':
+    ALLOWED_HOSTS = [os.environ.get('HEROKU_APP_NAME', '') + ".herokuapp.com"]
+    DB = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+elif DEPLOYMENT_TYPE == "staging":
+    ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS', '')]
+    DB_URL = os.environ.get('DATABASE_URL', '')
+    if DB_URL:
+        mobj = re.match(r'postgres://(?P<user>\w+):(?P<password>\w+)\@(?P<host>.*\.rds.amazonaws.com):(?P<port>\d+)/(?P<database>\w+)$', DB_URL)
+        if mobj:
+            DB = {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': mobj.group('database'),
+                'USER': mobj.group('user'),
+                'PASSWORD': mobj.group('password'),
+                'HOST': mobj.group('host'),
+                'PORT': '5432',    
+            }
+# Better way to do this
+# import dj_database_url
+# DATABASES = {
+#     'default': dj_database_url.config(default='postgres://myuser:mypassword@localhost:5432/mydatabase')
+# }
+
 
 # Application definition
 
@@ -38,6 +65,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'quote.apps.QuoteConfig'
 ]
 
 MIDDLEWARE = [
@@ -72,14 +100,9 @@ WSGI_APPLICATION = 'demo.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': DB
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -118,6 +141,8 @@ USE_TZ = True
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Heroky handling static files
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
