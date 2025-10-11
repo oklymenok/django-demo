@@ -7,6 +7,7 @@ def index(request):
     """
     Fetches a random quote and renders the main page.
     """
+    print("Test")
     try:
         # 1. Get the total number of quotes
         count = WisdomQuote.objects.aggregate(count=Count('id'))['count']
