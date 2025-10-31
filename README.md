@@ -62,7 +62,7 @@ Open application in your browser
 heroku open
 ```
 
-Populate DB for tests
+Apply migrations and populate DB for tests
 
 ```
 heroku run python manage.py shell
