@@ -36,7 +36,7 @@ echo python-3.13.7 > runtime.txt
 
 ```
 
-Specify process to run
+Specify a process to run
 
 ```
 vim Procfile
