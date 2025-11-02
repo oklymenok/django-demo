@@ -56,7 +56,7 @@ git commit -a -m "First commit"
 git push heroku main
 ```
 
-Open application in your browser
+Open the application in your browser
 
 ```
 heroku open
