@@ -27,7 +27,7 @@ def get_db_token(host, user, region, port=5432):
 
 def get_secret_data(secret_name, region):
     client = boto3.client('secretsmanager', region_name=region)
-    secret = client.get_secret_value(SecretId=secret)
+    secret = client.get_secret_value(SecretId=secret_name)
     settings = json.loads(secret['SecretString'])
     return settings
 

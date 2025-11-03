@@ -2,12 +2,12 @@
 set -e
 
 # ------------------------------------------------------------------
-if [["${COLLECT_STATIC}" == "true"]];then
+if [[ "${COLLECT_STATIC}" == "true" ]];then
   echo "==> Running collectstatic (no-input)"
   python manage.py collectstatic --no-input --clear
 fi
 
-if [["${MIGRATE}" == "true"]];then
+if [[ "${MIGRATE}" == "true" ]];then
   echo "==> Applying migrations"
   python manage.py migrate --no-input
 fi
