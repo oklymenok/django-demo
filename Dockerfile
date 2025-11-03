@@ -18,6 +18,11 @@ COPY quote /app/quote
 COPY demo /app/demo
 COPY urls.py /app/
 COPY manage.py /app/
+RUN apt-get update && apt-get -y install \
+        postgresql-client \
+	libpq-dev \
+	postgresql-common-dev \
+	gcc
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Expose the port that Django's built-in server runs on
