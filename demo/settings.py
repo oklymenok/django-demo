@@ -21,7 +21,7 @@ def get_db_token(host, user, region, port=5432):
     return client.generate_db_auth_token(
         DBHostname=host,
         Port=port,
-        DBUser=user,
+        DBUsername=user,
         Region=region
     )
 
