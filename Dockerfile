@@ -19,13 +19,14 @@ COPY demo /app/demo
 COPY urls.py /app/
 COPY manage.py /app/
 RUN apt-get update && apt-get -y install \
-        postgresql-client \
+	postgresql-client \
 	libpq-dev \
 	postgresql-common-dev \
 	gcc \
 	curl \
 	unzip \
-	less
+	less \
+	procps
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
 	unzip awscliv2.zip \
 	./aws/install

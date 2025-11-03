@@ -12,10 +12,27 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os, re
+import boto3
+import json
+
+# Functions for working with AWS
+def get_db_token(host, user, region, port=5432):
+    client = boto3.client('rds')
+    return client.generate_db_auth_token(
+        DBHostname=host,
+        Port=port,
+        DBUser=user,
+        Region=region
+    )
+
+def get_secret_data(secret_name, region):
+    client = boto3.client('secretsmanager', region_name=region)
+    secret = client.get_secret_value(SecretId=secret)
+    settings = json.loads(secret['SecretString'])
+    return settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -29,31 +46,60 @@ DEBUG = True
 ALLOWED_HOSTS = []
 DEPLOYMENT_TYPE = os.environ.get('DEPLOYMENT_TYPE','')
 
+# Supported HEROKU and AWS
+PLATFORM = os.environ.get('PLATFORM','')
+
+# Assume local or staging
 if DEPLOYMENT_TYPE == '':
-    ALLOWED_HOSTS = [os.environ.get('HEROKU_APP_NAME', '') + ".herokuapp.com"]
+    if PLATFORM == "HEROKU":
+        # Default APP name configured by Heroku for Application created for Pull Request
+        ALLOWED_HOSTS = [os.environ.get('HEROKU_APP_NAME', '') + ".herokuapp.com"]
+    elif PLATFORM == "AWS":
+        ALLOWED_HOSTS = [os.environ.get('DNS_NAME')]
     DB = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 elif DEPLOYMENT_TYPE == "staging":
-    ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS', '')]
-    DB_URL = os.environ.get('DATABASE_URL', '')
-    if DB_URL:
-        mobj = re.match(r'postgres://(?P<user>\w+):(?P<password>\w+)\@(?P<host>.*\.rds.amazonaws.com):(?P<port>\d+)/(?P<database>\w+)$', DB_URL)
-        if mobj:
-            DB = {
-                'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                'NAME': mobj.group('database'),
-                'USER': mobj.group('user'),
-                'PASSWORD': mobj.group('password'),
-                'HOST': mobj.group('host'),
-                'PORT': '5432',    
-            }
-# Better way to do this
-# import dj_database_url
-# DATABASES = {
-#     'default': dj_database_url.config(default='postgres://myuser:mypassword@localhost:5432/mydatabase')
-# }
+    # User Configured variable
+    if PLATFORM == "HEROKU":
+        ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS', '')]
+        DB_URL = os.environ.get('DATABASE_URL', '')
+        if DB_URL:
+            mobj = re.match(r'postgres://(?P<user>\w+):(?P<password>\w+)\@(?P<host>.*\.rds.amazonaws.com):(?P<port>\d+)/(?P<database>\w+)$', DB_URL)
+            if mobj:
+                DB = {
+                    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                    'NAME': mobj.group('database'),
+                    'USER': mobj.group('user'),
+                    'PASSWORD': mobj.group('password'),
+                    'HOST': mobj.group('host'),
+                    'PORT': '5432',    
+                }
+    # Better way to do this
+    # import dj_database_url
+    # DATABASES = {
+    #         'default': dj_database_url.config(default='postgres://myuser:mypassword@localhost:5432/mydatabase')
+    # }
+    elif PLATFORM == "AWS":
+        REGION = os.environ.get('AWS_REGION','us-east-1')
+        SECRET_NAME = os.environ.get('SECRET_NAME','')
+        settings = get_secret_data(SECRET_NAME, REGION)
+        host = settings['host']
+        dbname = settings['dbname']
+        user = settings['username']
+        port = settings['port']
+        DB = {
+                    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                    'NAME': settings['dbname'],
+                    'USER': settings['username'],
+                    'PASSWORD': get_db_token(host, user, REGION, port),
+                    'HOST': host,
+                    'PORT': port,
+                    'OPTIONS': {
+                        'sslmode': 'require',
+                    },
+                }
 
 
 # Application definition
