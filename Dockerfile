@@ -28,7 +28,7 @@ RUN apt-get update && apt-get -y install \
 	less \
 	procps
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-	unzip awscliv2.zip \
+	unzip awscliv2.zip && \
 	./aws/install
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
@@ -40,5 +40,5 @@ EXPOSE 8000
 # NOTE: This command is for DEVELOPMENT ONLY. For production, you should use
 # a dedicated WSGI server like Gunicorn or uWSGI.
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+RUN chmod +x /app/docker-entrypoint.sh
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
