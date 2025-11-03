@@ -22,7 +22,13 @@ RUN apt-get update && apt-get -y install \
         postgresql-client \
 	libpq-dev \
 	postgresql-common-dev \
-	gcc
+	gcc \
+	curl \
+	unzip \
+	less
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+	unzip awscliv2.zip \
+	./aws/install
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Expose the port that Django's built-in server runs on
@@ -32,5 +38,6 @@ EXPOSE 8000
 # We bind it to 0.0.0.0 so it's accessible outside the container.
 # NOTE: This command is for DEVELOPMENT ONLY. For production, you should use
 # a dedicated WSGI server like Gunicorn or uWSGI.
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
