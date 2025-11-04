@@ -82,6 +82,7 @@ elif DEPLOYMENT_TYPE == "staging":
     #         'default': dj_database_url.config(default='postgres://myuser:mypassword@localhost:5432/mydatabase')
     # }
     elif PLATFORM == "AWS":
+        ALLOWED_HOSTS = [os.environ.get('DNS_NAME')]
         REGION = os.environ.get('AWS_REGION','us-east-1')
         SECRET_NAME = os.environ.get('SECRET_NAME','')
         settings = get_secret_data(SECRET_NAME, REGION)
